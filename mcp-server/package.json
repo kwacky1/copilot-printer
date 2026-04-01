@@ -1,0 +1,21 @@
+{
+  "name": "copilot-printer-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for the Copilot Printer — lets Copilot CLI read documents printed to it",
+  "type": "module",
+  "main": "src/index.js",
+  "bin": {
+    "copilot-printer-mcp": "src/index.js"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "license": "MIT"
+}
