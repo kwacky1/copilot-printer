@@ -26,6 +26,50 @@ if (!fs.existsSync(INBOX_DIR)) {
   fs.mkdirSync(INBOX_DIR, { recursive: true });
 }
 
+/**
+ * Convert a PDF file to markdown, creating .md and .meta.json sidecar files.
+ * Tries pdftotext first, falls back to strings extraction.
+ */
+async function convertPdfToMd(pdfPath) {
+  const { execSync } = await import("node:child_process");
+  const baseName = path.basename(pdfPath, ".pdf");
+  const mdPath = pdfPath.replace(/\.pdf$/, ".md");
+  const metaPath = pdfPath.replace(/\.pdf$/, ".meta.json");
+
+  let converter = "none";
+  try {
+    // Try pdftotext (from poppler)
+    execSync(
+      `export PATH=/opt/homebrew/bin:/usr/local/bin:$PATH; pdftotext -layout "${pdfPath}" "${mdPath}"`,
+      { stdio: "pipe" }
+    );
+    converter = "pdftotext";
+  } catch {
+    try {
+      // Fallback to strings
+      execSync(`/usr/bin/strings "${pdfPath}" > "${mdPath}"`, {
+        stdio: "pipe",
+      });
+      converter = "strings";
+    } catch {
+      fs.writeFileSync(
+        mdPath,
+        `# ${baseName}\n\n> ⚠️ Could not extract text from this PDF. Install poppler: \`brew install poppler\`\n`
+      );
+      converter = "error";
+    }
+  }
+
+  // Write metadata
+  const meta = {
+    timestamp: new Date().toISOString(),
+    title: baseName,
+    converter,
+    source: "copilot-printer-mcp-autoconvert",
+  };
+  fs.writeFileSync(metaPath, JSON.stringify(meta, null, 2));
+}
+
 const server = new McpServer({
   name: "copilot-printer",
   version: "1.0.0",
@@ -40,7 +84,18 @@ server.tool(
   {},
   async () => {
     const files = fs.readdirSync(INBOX_DIR);
-    const mdFiles = files.filter((f) => f.endsWith(".md"));
+
+    // Auto-convert any PDFs that don't have a matching .md file yet
+    const pdfFiles = files.filter(
+      (f) => f.endsWith(".pdf") && !files.includes(f.replace(/\.pdf$/, ".md"))
+    );
+    for (const pdf of pdfFiles) {
+      await convertPdfToMd(path.join(INBOX_DIR, pdf));
+    }
+
+    // Re-read after conversion
+    const allFiles = fs.readdirSync(INBOX_DIR);
+    const mdFiles = allFiles.filter((f) => f.endsWith(".md"));
 
     if (mdFiles.length === 0) {
       return {
@@ -71,11 +126,13 @@ server.tool(
 
       return {
         filename: mdFile,
-        title: meta.title || mdFile,
+        title: meta.title || mdFile.replace(/\.md$/, ""),
         timestamp: meta.timestamp || stats.mtime.toISOString(),
         converter: meta.converter || "unknown",
         size: stats.size,
-        hasPdf: fs.existsSync(path.join(INBOX_DIR, mdFile.replace(/\.md$/, ".pdf"))),
+        hasPdf: fs.existsSync(
+          path.join(INBOX_DIR, mdFile.replace(/\.md$/, ".pdf"))
+        ),
       };
     });
 
