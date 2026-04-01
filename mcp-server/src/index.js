@@ -20,6 +20,7 @@ import * as path from "node:path";
 import * as os from "node:os";
 
 const INBOX_DIR = process.env.COPILOT_PRINTER_DIR || path.join(os.homedir(), "PrintToCopilot");
+const PDFWRITER_SPOOL = `/private/var/spool/pdfwriter/${os.userInfo().username}`;
 
 // Ensure inbox exists
 if (!fs.existsSync(INBOX_DIR)) {
@@ -84,6 +85,19 @@ server.tool(
   {},
   async () => {
     const files = fs.readdirSync(INBOX_DIR);
+
+    // Import any new PDFs from PDFwriter spool directory
+    if (fs.existsSync(PDFWRITER_SPOOL)) {
+      const spoolFiles = fs.readdirSync(PDFWRITER_SPOOL).filter(
+        (f) => f.endsWith(".pdf") && f !== "Icon\r"
+      );
+      for (const pdf of spoolFiles) {
+        const dest = path.join(INBOX_DIR, pdf);
+        if (!fs.existsSync(dest)) {
+          fs.copyFileSync(path.join(PDFWRITER_SPOOL, pdf), dest);
+        }
+      }
+    }
 
     // Auto-convert any PDFs that don't have a matching .md file yet
     const pdfFiles = files.filter(
