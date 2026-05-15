@@ -122,6 +122,28 @@ Each print job creates three files in `~/PrintToCopilot/`:
 20260401-150730-Meeting-Notes.meta.json  # Metadata (title, timestamp, converter)
 ```
 
+## Troubleshooting
+
+If PDFs are stuck in the spool and not appearing in `~/PrintToCopilot/`, run the doctor:
+
+```bash
+./doctor.sh
+```
+
+The doctor checks the full pipeline and prints rescue commands for stuck files.
+
+See [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for detailed guidance on common failure modes.
+
+### Spool Watcher
+
+By default (after `./install.sh`), a launchd agent watches the PDFWriter spool and auto-imports new PDFs within seconds of printing. If the watcher isn't installed:
+
+```bash
+./install-launchd-watcher.sh
+```
+
+Without the watcher, PDFs only get imported when Copilot calls `list_print_jobs` (i.e. when you ask *"What's in my print inbox?"*).
+
 ## Uninstall
 
 ```bash

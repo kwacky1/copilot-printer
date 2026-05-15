@@ -51,9 +51,14 @@ echo ""
 echo "🖨️  Step 3: Installing PDF Service..."
 bash "$SCRIPT_DIR/install-pdf-service.sh"
 
-# --- Step 4: Install MCP Server ---
+# --- Step 4: Install launchd spool watcher ---
 echo ""
-echo "🔌 Step 4: Setting up MCP server..."
+echo "⏱️  Step 4: Installing spool watcher (auto-import from PDFWriter)..."
+bash "$SCRIPT_DIR/install-launchd-watcher.sh"
+
+# --- Step 5: Install MCP Server ---
+echo ""
+echo "🔌 Step 5: Setting up MCP server..."
 
 MCP_SERVER_DIR="$SCRIPT_DIR/mcp-server"
 if [[ ! -d "$MCP_SERVER_DIR/node_modules" ]]; then
@@ -118,6 +123,12 @@ echo "     (Copilot will use list_print_jobs and read_print_job tools)"
 echo ""
 echo "  📂 INBOX LOCATION:"
 echo "     $COPILOT_INBOX"
+echo ""
+echo "  ⏱️  SPOOL WATCHER:"
+echo "     PDFs are now auto-imported from PDFWriter within seconds of printing."
+echo ""
+echo "  🩺 HEALTH CHECK:"
+echo "     ./doctor.sh"
 echo ""
 echo "  💡 If the PDF Service doesn't appear in the Print dialog,"
 echo "     log out and back in, or run:"
