@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  launchd agent: com.kwacky1.copilot-printer-watcher
+  Watches the PDFWriter spool directory and auto-imports new PDFs to ~/PrintToCopilot/
+  Install: cp this file to ~/Library/LaunchAgents/ then run install-launchd-watcher.sh
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.kwacky1.copilot-printer-watcher</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>SCRIPT_PLACEHOLDER</string>
+  </array>
+
+  <!-- Watch the spool directory for new files -->
+  <key>WatchPaths</key>
+  <array>
+    <string>SPOOL_PLACEHOLDER</string>
+  </array>
+
+  <!-- Also poll every 60s as a safety net -->
+  <key>StartInterval</key>
+  <integer>60</integer>
+
+  <key>RunAtLoad</key>
+  <true/>
+
+  <key>StandardOutPath</key>
+  <string>HOME_PLACEHOLDER/Library/Logs/copilot-printer-watcher.log</string>
+
+  <key>StandardErrorPath</key>
+  <string>HOME_PLACEHOLDER/Library/Logs/copilot-printer-watcher.log</string>
+
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+  </dict>
+</dict>
+</plist>

@@ -84,8 +84,6 @@ server.tool(
   "List documents that have been printed to Copilot. Shows pending documents waiting for AI processing.",
   {},
   async () => {
-    const files = fs.readdirSync(INBOX_DIR);
-
     // Import any new PDFs from PDFwriter spool directory
     if (fs.existsSync(PDFWRITER_SPOOL)) {
       const spoolFiles = fs.readdirSync(PDFWRITER_SPOOL).filter(
@@ -98,6 +96,9 @@ server.tool(
         }
       }
     }
+
+    // Re-read inbox AFTER spool import so newly copied PDFs are included
+    const files = fs.readdirSync(INBOX_DIR);
 
     // Auto-convert any PDFs that don't have a matching .md file yet
     const pdfFiles = files.filter(
